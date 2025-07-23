@@ -11,7 +11,7 @@ import {
   FaInfoCircle,
   FaQuestionCircle,
 } from 'react-icons/fa';
-import ProductsManager from '../components/ProductsManager';
+
 
 const AccountPage = () => {
   const dispatch = useDispatch();
@@ -94,8 +94,6 @@ const AccountPage = () => {
         </button>
       </div>
 
-      {/* Products Management (only for logged-in users) */}
-      {user && <ProductsManager shopId={user.shopId} />}
     </div>
   );
 };
