@@ -1,89 +1,101 @@
-import React, { useEffect } from 'react';
+// src/pages/AccountPage.jsx
+
 import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../features/auth/authSlice';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  FaUser,
+  FaSignOutAlt,
+  FaGlobe,
+  FaCog,
+  FaInfoCircle,
+  FaQuestionCircle,
+} from 'react-icons/fa';
+import ProductsManager from '../components/ProductsManager';
 
 const AccountPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector(state => state.auth);
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-    }
-  }, [user, navigate]);
-
-  if (!user) return null;
-
   const handleLogout = () => {
     dispatch(logoutUser());
     navigate('/login');
   };
 
-  const memberSince = user.createdAt
-    ? new Date(user.createdAt).toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : 'N/A';
-
-  const displayRole = user?.role
-    ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
-    : 'Role';
-
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-lg mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-        {/* Profile Header */}
-        <div className="bg-gray-100 px-6 py-8 flex flex-col items-center">
+      {/* Top Actions: Login/Signup or User Info & Actions */}
+      {user ? (
+        <div className="flex justify-center items-center space-x-6 mb-8">
           <img
-            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=ffffff&color=000000&size=128`}
+            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+              user.name || 'User'
+            )}&background=ffffff&color=000000&size=64`}
             alt="Avatar"
-            className="w-32 h-32 rounded-full border-4 border-gray-300"
+            className="w-10 h-10 rounded-full border-2 border-gray-300"
           />
-          <h2 className="mt-4 text-2xl font-semibold text-gray-800">
-            {user.name || 'User'}
-          </h2>
-          <p className="text-gray-600">{user.email || 'No email'}</p>
-          <span className="mt-2 inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-            {displayRole}
+          <span className="text-lg font-medium text-gray-800">
+            {user.name}
           </span>
+          <Link
+            to="/account"
+            className="text-gray-700 hover:text-gray-900 transition"
+          >
+            <FaUser className="w-6 h-6" />
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="text-gray-700 hover:text-gray-900 transition"
+          >
+            <FaSignOutAlt className="w-6 h-6" />
+          </button>
         </div>
-
-        {/* Account Details */}
-        <div className="px-6 py-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-700">
-            Account Details
-          </h3>
-          <ul className="space-y-2 text-gray-700">
-            <li>
-              <strong>Member Since:</strong> {memberSince}
-            </li>
-            <li>
-              <strong>User ID:</strong> {user._id || 'N/A'}
-            </li>
-          </ul>
-
-          {/* Actions */}
-          <div className="mt-6 flex space-x-4">
-            <Link
-              to="/account/edit"
-              className="flex-1 text-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-            >
-              Edit Profile
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-            >
-              Logout
-            </button>
-          </div>
+      ) : (
+        <div className="flex justify-center space-x-4 mb-8">
+          <Link
+            to="/login"
+            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          >
+            Login
+          </Link>
+          <Link
+            to="/register"
+            className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+          >
+            Sign Up
+          </Link>
         </div>
+      )}
+
+      {/* Four Sections (common) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+        <button className="flex flex-col items-center p-6 bg-white rounded-xl shadow hover:shadow-md transition">
+          <FaGlobe className="w-8 h-8 text-blue-600" />
+          <span className="mt-2 text-gray-700 font-medium">Language</span>
+        </button>
+        <button className="flex flex-col items-center p-6 bg-white rounded-xl shadow hover:shadow-md transition">
+          <FaCog className="w-8 h-8 text-gray-600" />
+          <span className="mt-2 text-gray-700 font-medium">Settings</span>
+        </button>
+        <button
+          onClick={() => navigate('/help')}
+          className="flex flex-col items-center p-6 bg-white rounded-xl shadow hover:shadow-md transition"
+        >
+          <FaQuestionCircle className="w-8 h-8 text-green-600" />
+          <span className="mt-2 text-gray-700 font-medium">Help</span>
+        </button>
+        <button
+          onClick={() => navigate('/about')}
+          className="flex flex-col items-center p-6 bg-white rounded-xl shadow hover:shadow-md transition"
+        >
+          <FaInfoCircle className="w-8 h-8 text-purple-600" />
+          <span className="mt-2 text-gray-700 font-medium">About</span>
+        </button>
       </div>
+
+      {/* Products Management (only for logged-in users) */}
+      {user && <ProductsManager shopId={user.shopId} />}
     </div>
   );
 };

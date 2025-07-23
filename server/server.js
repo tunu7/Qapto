@@ -4,39 +4,60 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
+import bcrypt from 'bcryptjs';
+
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import shopRoutes from './routes/shopRoutes.js';
 import productRoutes from './routes/productRoutes.js';
-import errorHandler from './middleware/errorMiddleware.js';
-import { notFound } from './middleware/errorMiddleware.js';
+import errorHandler, { notFound } from './middleware/errorMiddleware.js';
+
+import User from './models/User.js';
 
 dotenv.config();
-connectDB();
+await connectDB();
 
 const app = express();
 
-// Security & rate‑limit
+// ————— Security & Rate-Limit —————
 app.use(helmet());
-app.use(rateLimit({ windowMs: 15*60*1000, max: 100 }));
+app.use(rateLimit({ windowMs:15*60*1000, max:100 }));
 
-// CORS: read origins from ENV
-const allowed = process.env.ALLOWED_ORIGINS
-  .split(',')
-  .map(origin => origin.trim());
+// ————— CORS —————
+const allowed = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
 app.use(cors({ origin: allowed, credentials: true }));
 
 app.use(express.json());
 app.use(cookieParser());
 
-// your routes…
+// ————— Seed single admin —————
+const seedAdmin = async () => {
+  const exists = await User.findOne({ role: 'admin' });
+  if (!exists) {
+    const salt = await bcrypt.genSalt(12);
+    const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, salt);
+    await User.create({
+      name: process.env.ADMIN_NAME,
+      email: process.env.ADMIN_EMAIL,
+      password: hash,
+      role: 'admin',
+    });
+    console.log('✅ Admin user seeded');
+  }
+};
+await seedAdmin();
+
+// ————— Routes —————
 app.use('/api/auth',     authRoutes);
-app.use('/api/shops',    shopRoutes);
-app.use('/api/products', productRoutes);
+// from here on, all shop/product writes require admin
+import { protect, adminOnly } from './middleware/authMiddleware.js';
 
-app.get('/', (req, res) => res.send('API is running...'));
+app.use('/api/shops',    protect, adminOnly, shopRoutes);
+app.use('/api/products', protect, adminOnly, productRoutes);
 
-// 404 + error handler
+app.get('/', (req, res) => res.send('API is running…'));
+
+// ————— Error Handling —————
 app.use(notFound);
 app.use(errorHandler);
 

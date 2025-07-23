@@ -22,11 +22,8 @@ const App = () => (
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
          <Route path="/shop/:shopId" element={<ShopProductsPage />} />
+        <Route path="/account" element={<AccountPage />} />
 
-        {/* private */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/account" element={<AccountPage />} />
-        </Route>
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

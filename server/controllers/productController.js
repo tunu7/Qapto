@@ -27,3 +27,42 @@ export const addProduct = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// UPDATE an existing product
+export const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, ratePerSqFt } = req.body;
+
+    // Find and update
+    const updated = await Product.findByIdAndUpdate(
+      id,
+      { name, description, ratePerSqFt },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// DELETE a product
+export const deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await Product.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.json({ message: 'Product deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
