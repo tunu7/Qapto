@@ -11,7 +11,7 @@ import authRoutes from './routes/authRoutes.js';
 import shopRoutes from './routes/shopRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import errorHandler, { notFound } from './middleware/errorMiddleware.js';
-
+import { protect, adminOnly } from './middleware/authMiddleware.js';
 import User from './models/User.js';
 
 dotenv.config();
@@ -50,10 +50,9 @@ await seedAdmin();
 // ————— Routes —————
 app.use('/api/auth',     authRoutes);
 // from here on, all shop/product writes require admin
-import { protect, adminOnly } from './middleware/authMiddleware.js';
 
-app.use('/api/shops',    protect, adminOnly, shopRoutes);
-app.use('/api/products', protect, adminOnly, productRoutes);
+app.use('/api/shops',   shopRoutes);
+app.use('/api/products',  productRoutes);
 
 app.get('/', (req, res) => res.send('API is running…'));
 
