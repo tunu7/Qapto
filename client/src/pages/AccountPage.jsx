@@ -1,6 +1,6 @@
 // src/pages/AccountPage.jsx
 import { useSelector, useDispatch } from 'react-redux';
-import { logoutUser } from '../features/auth/authSlice';
+import { logoutUser } from '../features/auth/authThunks';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   FaUser,

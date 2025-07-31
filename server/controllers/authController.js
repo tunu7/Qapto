@@ -39,7 +39,6 @@ export const register = asyncHandler(async (req, res) => {
     role: user.role
   });
 });
-
 // @desc    Login user & get tokens
 // @route   POST /api/auth/login
 // @access  Public
@@ -68,7 +67,16 @@ export const login = asyncHandler(async (req, res) => {
     maxAge: parseInt(process.env.JWT_REFRESH_EXPIRES_MS, 10) || 7 * 24 * 60 * 60 * 1000
   });
 
-  res.json({ accessToken });
+  // Send accessToken and user details (excluding password)
+  res.json({
+    accessToken,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    }
+  });
 });
 
 // @desc    Refresh access token

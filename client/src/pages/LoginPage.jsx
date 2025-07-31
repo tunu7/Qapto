@@ -2,7 +2,9 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { loginUser, resetError } from '../features/auth/authSlice';
+import { loginUser } from '../features/auth/authThunks';
+import { resetError } from '../features/auth/authSlice'; // ✅ correct
+
 
 const LoginPage = () => {
   const [form, setForm] = useState({ email: '', password: '' });

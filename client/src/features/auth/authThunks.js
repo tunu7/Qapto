@@ -1,72 +1,57 @@
 // src/features/auth/authThunks.js
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import axios from '../../api/axiosInstance';
 
-import { createAsyncThunk } from '@reduxjs/toolkit'
-import axiosInstance from '../../api/axiosInstance'
+const extractErrorMessage = (err) => {
+  if (err?.response?.data?.message) return err.response.data.message;
+  if (err?.message) return err.message;
+  return 'An unexpected error occurred';
+};
 
-// ✅ Register user and auto-login
 export const registerUser = createAsyncThunk(
   'auth/register',
-  async ({ name, email, password }, { rejectWithValue }) => {
+  async (userData, thunkAPI) => {
     try {
-      const { data } = await axiosInstance.post(
-        '/auth/register',
-        { name, email, password },
-        { withCredentials: true } // Ensures cookies (refresh token) are sent
-      )
-      return data // Expected: { user, accessToken }
+      const res = await axios.post('/auth/register', userData, { withCredentials: true });
+      return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message)
+      return thunkAPI.rejectWithValue(extractErrorMessage(err));
     }
   }
-)
+);
 
-// ✅ Login user
 export const loginUser = createAsyncThunk(
   'auth/login',
-  async ({ email, password }, { rejectWithValue }) => {
+  async (credentials, thunkAPI) => {
     try {
-      const { data } = await axiosInstance.post(
-        '/auth/login',
-        { email, password },
-        { withCredentials: true }
-      )
-      return data // Expected: { user, accessToken }
+      const res = await axios.post('/auth/login', credentials, { withCredentials: true });
+      return res.data; // expected { accessToken, user }
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message)
+      return thunkAPI.rejectWithValue(extractErrorMessage(err));
     }
   }
-)
+);
 
-// ✅ Refresh access token using httpOnly cookie
-export const refreshToken = createAsyncThunk(
-  'auth/refresh',
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await axiosInstance.post(
-        '/auth/refresh',
-        {},
-        { withCredentials: true }
-      )
-      return data.accessToken // Only accessToken is returned
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message)
-    }
-  }
-)
-
-// ✅ Logout user (clears refresh cookie server-side)
 export const logoutUser = createAsyncThunk(
   'auth/logout',
-  async (_, { rejectWithValue }) => {
+  async (_, thunkAPI) => {
     try {
-      await axiosInstance.post(
-        '/auth/logout',
-        {},
-        { withCredentials: true }
-      )
-      return // nothing to return
+      await axios.post('/auth/logout', null, { withCredentials: true });
+      return;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message)
+      return thunkAPI.rejectWithValue(extractErrorMessage(err));
     }
   }
-)
+);
+
+export const refreshToken = createAsyncThunk(
+  'auth/refresh',
+  async (_, thunkAPI) => {
+    try {
+      const res = await axios.post('/auth/refresh', null, { withCredentials: true });
+      return res.data; // expected { accessToken }
+    } catch (err) {
+      return thunkAPI.rejectWithValue(extractErrorMessage(err));
+    }
+  }
+);
