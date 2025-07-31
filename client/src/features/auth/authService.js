@@ -11,12 +11,17 @@ const register = async (userData) => {
 
 const login = async (credentials) => {
   const res = await axios.post(API_URL + 'login', credentials);
-  // { accessToken }
-  if (res.data.accessToken) {
-    localStorage.setItem('user', JSON.stringify(res.data));
+  console.log('Login response:', res.data);
+
+  if (res.data.accessToken && res.data.user) {
+    localStorage.setItem('accessToken', res.data.accessToken);
+    localStorage.setItem('user', JSON.stringify(res.data.user));
   }
+
   return res.data;
 };
+
+
 
 const logout = async () => {
   await axios.post(API_URL + 'logout');

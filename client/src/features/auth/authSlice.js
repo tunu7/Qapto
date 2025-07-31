@@ -85,15 +85,14 @@ const authSlice = createSlice({
       })
 
       // Login
-      .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
-      })
+
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user      = action.payload;
-        // persist to localStorage
-        localStorage.setItem('user', JSON.stringify(action.payload));
-      })
+  state.isLoading = false;
+  state.user      = action.payload.user;
+  localStorage.setItem('user', JSON.stringify(action.payload.user));
+  localStorage.setItem('accessToken', action.payload.accessToken); // optional
+})
+
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError   = true;

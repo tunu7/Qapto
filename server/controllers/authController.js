@@ -94,13 +94,16 @@ export const login = asyncHandler(async (req, res) => {
   // Send refresh token as secure httpOnly cookie
   res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
-  res.json({
-    accessToken,
+  // POST /auth/login
+res.json({
+  user: {
     _id: user._id,
     name: user.name,
-    email: user.email,
-    role: user.role,
-  });
+    email: user.email
+  },
+  accessToken
+});
+
 });
 
 // @desc    Refresh access token
