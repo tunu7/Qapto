@@ -14,7 +14,10 @@ export const protect = asyncHandler(async (req, res, next) => {
     throw new Error('Not authorized, no token');
   }
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  req.user = await User.findById(decoded.userId).select('-password');
+req.user = {
+  ...(await User.findById(decoded.userId).select('-password')).toObject(),
+  role: decoded.role // Inject role from JWT
+};
   if (!req.user) {
     res.status(401);
     throw new Error('Not authorized');
@@ -22,10 +25,11 @@ export const protect = asyncHandler(async (req, res, next) => {
   next();
 });
 
-export const adminOnly = (req, res, next) => {
-  if (req.user.role !== 'admin') {
+export const authorizeRoles = (...roles) => (req, res, next) => {
+  if (!roles.includes(req.user.role)) {
     res.status(403);
-    throw new Error('Admin access only');
+    throw new Error(`Access denied: ${req.user.role} is not authorized`);
   }
   next();
 };
+
