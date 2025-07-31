@@ -47,8 +47,9 @@ export const register = asyncHandler(async (req, res) => {
   });
 
   // Optionally: create tokens here too if you want auto-login on register
-  const accessToken = generateAccessToken(user._id);
-  const refreshToken = generateRefreshToken(user._id);
+ const accessToken = generateAccessToken(user._id, user.role);
+const refreshToken = generateRefreshToken(user._id, user.role);
+
 
   // Set refresh token cookie
   res.cookie('refreshToken', refreshToken, refreshCookieOptions);
@@ -88,8 +89,10 @@ export const login = asyncHandler(async (req, res) => {
   }
 
   // Generate tokens
-  const accessToken = generateAccessToken(user._id);
-  const refreshToken = generateRefreshToken(user._id);
+
+  const accessToken = generateAccessToken(user._id, user.role);
+const refreshToken = generateRefreshToken(user._id, user.role);
+
 
   // Send refresh token as secure httpOnly cookie
   res.cookie('refreshToken', refreshToken, refreshCookieOptions);
@@ -99,7 +102,8 @@ res.json({
   user: {
     _id: user._id,
     name: user.name,
-    email: user.email
+    email: user.email,
+    role: user.role
   },
   accessToken
 });

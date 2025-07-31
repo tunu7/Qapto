@@ -5,27 +5,39 @@ import {
   getUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
+  getAdminData,
+  getVendorPanel,
 } from '../controllers/userController.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
+import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Profile routes (private)
+// Profile (private)
 router
   .route('/profile')
   .get(protect, getUserProfile)
   .put(protect, updateUserProfile);
 
-// Admin-only user management
+// Role-specific endpoints (place before parameterized routes)
+router.get('/admin-data', protect, authorizeRoles('admin'), getAdminData);
+router.get(
+  '/vendor-panel',
+  protect,
+  authorizeRoles('vendor', 'admin'),
+  getVendorPanel
+);
+
+// Admin user management
 router
   .route('/')
-  .get(protect, admin, getUsers);
+  .get(protect, authorizeRoles('admin'), getUsers);
 
+// CRUD on specific user by ID (admin only)
 router
   .route('/:id')
-  .get(protect, admin, getUserById)
-  .put(protect, admin, updateUser)
-  .delete(protect, admin, deleteUser);
+  .get(protect, authorizeRoles('admin'), getUserById)
+  .put(protect, authorizeRoles('admin'), updateUser)
+  .delete(protect, authorizeRoles('admin'), deleteUser);
 
 export default router;
