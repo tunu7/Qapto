@@ -21,47 +21,61 @@ const refreshCookieOptions = {
 // @route   POST /api/auth/register
 // @access  Public
 export const register = asyncHandler(async (req, res) => {
-  let { name, email, password } = req.body;
+  const { name, email, password } = req.body;
 
+  // Basic validation
   if (!name || !email || !password) {
-    res.status(400);
-    throw new Error('Name, email and password are required');
+    return res.status(400).json({ message: 'Name, email and password are required' });
   }
 
-  email = email.toLowerCase().trim();
+  const normalizedEmail = email.toLowerCase().trim();
 
-  const exists = await User.findOne({ email });
+  // Check duplicate
+  const exists = await User.findOne({ email: normalizedEmail });
   if (exists) {
-    res.status(400);
-    throw new Error('Email already in use');
+    return res.status(400).json({ message: 'Email already in use' });
   }
 
+  // Hash password
   const salt = await bcrypt.genSalt(12);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  const user = await User.create({
-    name: name.trim(),
-    email,
-    password: hashedPassword,
-    role: 'user', // fixed: string literal
-  });
+  // Create user
+  let user;
+  try {
+    user = await User.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      password: hashedPassword,
+      role: 'user',
+    });
+  } catch (err) {
+    // Handle rare duplicate key race or validation
+    if (err.code === 11000) {
+      return res.status(400).json({ message: 'Email already in use' });
+    }
+    throw err; // let asyncHandler bubble unexpected errors
+  }
 
-  // Optionally: create tokens here too if you want auto-login on register
- const accessToken = generateAccessToken(user._id, user.role);
-const refreshToken = generateRefreshToken(user._id, user.role);
-
+  // Generate tokens
+  const accessToken = generateAccessToken(user._id, user.role);
+  const refreshToken = generateRefreshToken(user._id, user.role);
 
   // Set refresh token cookie
   res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
+  // Respond
   res.status(201).json({
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: 'user',
+    },
     accessToken,
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
   });
 });
+
 
 // @desc    Login user & get tokens
 // @route   POST /api/auth/login
@@ -103,7 +117,7 @@ res.json({
     _id: user._id,
     name: user.name,
     email: user.email,
-    role: user.role
+    role: 'user'
   },
   accessToken
 });
@@ -136,7 +150,8 @@ export const refresh = asyncHandler(async (req, res) => {
 
   // Optionally: you can implement refresh token rotation here (issue new refresh token, revoke old one)
 
-  const accessToken = generateAccessToken(user._id);
+  const accessToken = generateAccessToken(user._id, user.role);
+
   res.json({ accessToken });
 });
 
