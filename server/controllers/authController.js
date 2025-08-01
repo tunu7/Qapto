@@ -157,13 +157,23 @@ export const refresh = asyncHandler(async (req, res) => {
 // @route   POST /api/auth/logout
 // @access  Public
 export const logout = asyncHandler(async (req, res) => {
-  // Clear the refresh token cookie
-  res.clearCookie('refreshToken', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Strict',
-    path: '/',
-  });
+  try {
+    console.log('🔄 Cookies at logout:', req.cookies); // ✅ Logging
 
-  res.json({ message: 'Logged out successfully' });
+    // Only clear if the cookie exists (defensive)
+    if (req.cookies?.refreshToken) {
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'None', // important if frontend/backend are on different origins
+        path: '/',
+      });
+    }
+
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (err) {
+    console.error('❌ Logout error:', err);
+    res.status(500).json({ message: 'Logout failed' });
+  }
 });
+

@@ -81,10 +81,16 @@ const authSlice = createSlice({
         state.isError = false;
         state.message = '';
       })
-      .addCase(registerUser.fulfilled, (state) => {
-        state.isLoading = false;
-        // no auto-login assumed
-      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+  state.isLoading = false;
+  const { user, accessToken } = action.payload || {};
+  state.user = user || null;
+  state.accessToken = accessToken || null;
+  state.isError = false;
+  state.message = '';
+  safeSetItem('auth', { accessToken: state.accessToken, user: state.user });
+})
+
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
