@@ -11,7 +11,7 @@ import authRoutes from './routes/authRoutes.js';
 import shopRoutes from './routes/shopRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import errorHandler, { notFound } from './middleware/errorMiddleware.js';
-import { protect, adminOnly } from './middleware/authMiddleware.js';
+import { protect, authorizeRoles } from './middleware/authMiddleware.js';
 import User from './models/User.js';
 
 dotenv.config();

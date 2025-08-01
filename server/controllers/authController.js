@@ -21,60 +21,58 @@ const refreshCookieOptions = {
 // @route   POST /api/auth/register
 // @access  Public
 export const register = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-
-  // Basic validation
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: 'Name, email and password are required' });
-  }
-
-  const normalizedEmail = email.toLowerCase().trim();
-
-  // Check duplicate
-  const exists = await User.findOne({ email: normalizedEmail });
-  if (exists) {
-    return res.status(400).json({ message: 'Email already in use' });
-  }
-
-  // Hash password
-  const salt = await bcrypt.genSalt(12);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  // Create user
-  let user;
   try {
-    user = await User.create({
-      name: name.trim(),
-      email: normalizedEmail,
-      password: hashedPassword,
-      role: 'user',
-    });
-  } catch (err) {
-    // Handle rare duplicate key race or validation
-    if (err.code === 11000) {
-      return res.status(400).json({ message: 'Email already in use' });
+    const { name, email, password } = req.body;
+
+    console.log('Register payload:', req.body); // debug log
+
+    if (!name || !email || !password) {
+      res.status(400);
+      throw new Error('All fields are required');
     }
-    throw err; // let asyncHandler bubble unexpected errors
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      res.status(400);
+      throw new Error('User already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
+    });
+
+   const accessToken = generateAccessToken(user._id, user.role);
+const refreshToken = generateRefreshToken(user._id, user.role);
+
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'None',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(201).json({ user, accessToken });
+  } catch (err) {
+    console.error('Register Error:', err);
+
+    // Handle duplicate key error (email already exists)
+    if (err.code === 11000) {
+      res.status(400).json({ message: 'Email already in use' });
+    } else if (err.name === 'ValidationError') {
+      // Mongoose validation error
+      const messages = Object.values(err.errors).map(val => val.message);
+      res.status(400).json({ message: messages.join(', ') });
+    } else {
+      res.status(500).json({ message: err.message || 'Internal Server Error' });
+    }
   }
-
-  // Generate tokens
-  const accessToken = generateAccessToken(user._id, user.role);
-  const refreshToken = generateRefreshToken(user._id, user.role);
-
-  // Set refresh token cookie
-  res.cookie('refreshToken', refreshToken, refreshCookieOptions);
-
-  // Respond
-  res.status(201).json({
-    user: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: 'user',
-    },
-    accessToken,
-  });
 });
+
 
 
 // @desc    Login user & get tokens
