@@ -92,7 +92,7 @@ const AccountPage = () => {
                 label="Admin Panel"
               />
               <RoleButton
-                allowedRoles={['vendor', 'admin']}
+                allowedRoles={['vendor']}
                 onClick={() => navigate('/vendor-panel')}
                 Icon={FaStore}
                 label="Vendor Panel"
