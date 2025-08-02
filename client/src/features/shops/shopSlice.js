@@ -1,9 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { fetchShopsAPI } from './shopAPI';
 
-export const fetchShops = createAsyncThunk('shops/fetchShops', async () => {
-  return await fetchShopsAPI();
-});
+export const fetchShops = createAsyncThunk(
+  'shops/fetchShops',
+  async () => {
+    return await fetchShopsAPI();
+  },
+  {
+    condition: (_, { getState }) => {
+      const { shops } = getState().shops;
+      return shops.length === 0; // skip if already loaded
+    }
+  }
+);
+
 
 const shopSlice = createSlice({
   name: 'shops',

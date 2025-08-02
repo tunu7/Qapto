@@ -31,25 +31,36 @@ const HomePage = () => {
       <section className="container mx-auto px-4 pb-12">
         <h2 className="text-2xl font-bold mb-6">Our Shops</h2>
 
-        {loading && <p>Loading shops…</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+            {Array(4).fill(0).map((_, i) => (
+              <div key={i} className="bg-gray-200 rounded-lg h-24 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+            {shops.map(shop => (
+              <div
+                key={shop._id}
+                onClick={() => handleShopClick(shop)}
+                className="p-6 bg-white rounded-lg shadow hover:shadow-lg cursor-pointer transition"
+              >
+                <h3 className="text-xl font-semibold">{shop.name}</h3>
+                {shop.description && (
+                  <p className="mt-2 text-gray-600 text-sm">
+                    {shop.description}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-          {shops.map(shop => (
-            <div
-              key={shop._id}
-              onClick={() => handleShopClick(shop)}
-              className="p-6 bg-white rounded-lg shadow hover:shadow-lg cursor-pointer transition"
-            >
-              <h3 className="text-xl font-semibold">{shop.name}</h3>
-              {shop.description && (
-                <p className="mt-2 text-gray-600 text-sm">
-                  {shop.description}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
+        {error && (
+          <p className="text-red-500 mt-4">
+            Failed to load shops: {error}
+          </p>
+        )}
       </section>
     </>
   );
