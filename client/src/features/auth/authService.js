@@ -13,9 +13,8 @@ const login = async (credentials) => {
   const res = await axios.post(API_URL + 'login', credentials);
   // { accessToken }
   if (res.data.accessToken) {
-    localStorage.setItem('user', JSON.stringify(res.data));
+    return res.data;
   }
-  return res.data;
 };
 
 const logout = async () => {
@@ -28,7 +27,7 @@ const refresh = async () => {
   // { accessToken }
   const user = JSON.parse(localStorage.getItem('user'));
   user.accessToken = res.data.accessToken;
-  localStorage.setItem('user', JSON.stringify(user));
+
   return res.data;
 };
 
