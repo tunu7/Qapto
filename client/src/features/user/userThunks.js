@@ -103,10 +103,11 @@ export const deleteUser = createAsyncThunk(
 // User: Apply for Vendor
 export const applyForVendor = createAsyncThunk(
   'user/applyForVendor',
-  async (_, { getState, rejectWithValue }) => {
+  async (shopName, { getState, rejectWithValue }) => {
+
     try {
       const token = getState().auth.accessToken;
-      const { data } = await axiosInstance.put('/users/apply-vendor', {}, {
+      const { data } = await axiosInstance.put('/users/apply-vendor',  { shopName }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       return data.user; // return the updated user

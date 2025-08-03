@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
+import Shop from '../models/Shop.js';
 
 // @desc    Get current user profile
 // @route   GET /api/users/profile
@@ -98,28 +99,47 @@ export const deleteUser = asyncHandler(async (req, res) => {
 });
 
 
-// @desc    Change role from user to vendor
+
+// @desc    Change role from user to vendor and create a shop
 // @route   PUT /api/users/apply-vendor
 // @access  Private (only logged-in users)
+// @route   PUT /api/users/apply-vendor
 export const applyForVendor = async (req, res) => {
   try {
-    const userId = req.user.id; // assuming 'protect' middleware adds user info to req
-    const user = await User.findById(userId);
+    const userId = req.user.id;
+    const { shopName } = req.body;
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!shopName) {
+      return res.status(400).json({ message: 'Shop name is required' });
     }
 
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
     if (user.role === 'vendor') {
       return res.status(400).json({ message: 'User is already a vendor' });
     }
 
+    const existingShop = await Shop.findOne({ name: shopName });
+    if (existingShop) {
+      return res.status(400).json({ message: 'Shop name already exists' });
+    }
+
+    const newShop = new Shop({ name: shopName, owner: user._id });
+    await newShop.save();
+
     user.role = 'vendor';
     await user.save();
 
-    res.status(200).json({ message: 'Role updated to vendor', user });
+    res.status(200).json({
+      message: 'User promoted to vendor and shop created',
+      user,
+      shop: newShop,
+    });
   } catch (error) {
+    console.error('applyForVendor error:', error);
     res.status(500).json({ message: error.message || 'Server Error' });
   }
 };
+
+
 
