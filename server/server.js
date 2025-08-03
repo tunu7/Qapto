@@ -9,6 +9,7 @@ import bcrypt from 'bcryptjs';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import shopRoutes from './routes/shopRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import errorHandler, { notFound } from './middleware/errorMiddleware.js';
 import { protect, authorizeRoles } from './middleware/authMiddleware.js';
@@ -50,6 +51,7 @@ await seedAdmin();
 // ————— Routes —————
 app.use('/api/auth',     authRoutes);
 // from here on, all shop/product writes require admin
+app.use('/api/users', userRoutes);
 
 app.use('/api/shops',   shopRoutes);
 app.use('/api/products',  productRoutes);

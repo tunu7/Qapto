@@ -5,9 +5,8 @@ import {
   getUsers,
   getUserById,
   updateUser,
-  deleteUser,
-  getAdminData,
-  getVendorPanel,
+  deleteUser
+  ,applyForVendor,
 } from '../controllers/userController.js';
 import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 
@@ -20,13 +19,8 @@ router
   .put(protect, updateUserProfile);
 
 // Role-specific endpoints (place before parameterized routes)
-router.get('/admin-data', protect, authorizeRoles('admin'), getAdminData);
-router.get(
-  '/vendor-panel',
-  protect,
-  authorizeRoles('vendor', 'admin'),
-  getVendorPanel
-);
+
+router.put('/apply-vendor', protect, applyForVendor);
 
 // Admin user management
 router

@@ -6,7 +6,8 @@ import {
   listUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser, 
+  applyForVendor,
 } from './userThunks'
 
 const initialState = {
@@ -98,6 +99,20 @@ const userSlice = createSlice({
       .addCase(deleteUser.rejected, (state, { payload }) => {
         state.loading = false; state.error = payload
       })
+
+       .addCase(applyForVendor.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(applyForVendor.fulfilled, (state, { payload }) => {
+        state.loading = false;
+        state.profile = payload;
+        state.success = true;
+      })
+      .addCase(applyForVendor.rejected, (state, { payload }) => {
+        state.loading = false;
+        state.error = payload;
+      });
   }
 })
 
@@ -110,7 +125,8 @@ export {
   listUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
+  applyForVendor,
 }
 
 export default userSlice.reducer

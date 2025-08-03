@@ -96,3 +96,30 @@ export const deleteUser = asyncHandler(async (req, res) => {
   await user.remove();
   res.json({ message: 'User removed' });
 });
+
+
+// @desc    Change role from user to vendor
+// @route   PUT /api/users/apply-vendor
+// @access  Private (only logged-in users)
+export const applyForVendor = async (req, res) => {
+  try {
+    const userId = req.user.id; // assuming 'protect' middleware adds user info to req
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role === 'vendor') {
+      return res.status(400).json({ message: 'User is already a vendor' });
+    }
+
+    user.role = 'vendor';
+    await user.save();
+
+    res.status(200).json({ message: 'Role updated to vendor', user });
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Server Error' });
+  }
+};
+
